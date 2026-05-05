@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
+import requests
 
 # --- 1. 페이지 기본 설정 ---
 st.set_page_config(
@@ -34,19 +35,29 @@ else:
     is_index = True
 
 # --- 3. 데이터 로딩 함수 정의 (Caching 적용) ---
+# 브라우저인 척하기 위한 헤더 설정
+session = requests.Session()
+session.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+})
+
 @st.cache_data(ttl=3600)
 def get_stock_data(ticker):
     """주가 과거 데이터(1년)와 종목 기본 정보를 가져옵니다."""
     try:
-        yf_ticker = yf.Ticker(ticker)
+        # 핵심 변경: session을 ticker 객체에 전달합니다.
+        yf_ticker = yf.Ticker(ticker, session=session)
 
         # 주가 데이터 (1년)
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
         df = yf_ticker.history(start=start_date, end=end_date)
 
-        # 재무/수급 정보 (Info)
-        info = yf_ticker.info
+        # 재무/수급 정보 (Info) - 이 부분에서 차단이 많이 발생하므로 예외처리 강화
+        try:
+            info = yf_ticker.info
+        except:
+            info = {} # 실패 시 빈 딕셔너리로 반환하여 차트라도 뜨게 함
 
         return df, info, None
     except Exception as e:
