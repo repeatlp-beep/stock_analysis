@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
-import requests
+
 
 # --- 1. 페이지 기본 설정 ---
 st.set_page_config(
@@ -35,18 +35,13 @@ else:
     is_index = True
 
 # --- 3. 데이터 로딩 함수 정의 (Caching 적용) ---
-# 브라우저인 척하기 위한 헤더 설정
-session = requests.Session()
-session.headers.update({
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-})
 
 @st.cache_data(ttl=3600)
 def get_stock_data(ticker):
     """주가 과거 데이터(1년)와 종목 기본 정보를 가져옵니다."""
     try:
         # 핵심 변경: session을 ticker 객체에 전달합니다.
-        yf_ticker = yf.Ticker(ticker, session=session)
+        yf_ticker = yf.Ticker(ticker)
 
         # 주가 데이터 (1년)
         end_date = datetime.now()
