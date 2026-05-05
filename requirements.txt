@@ -1,4 +1,4 @@
 streamlit
 yfinance
 pandas
-plotly[cite: 1]
+plotly
